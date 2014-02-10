@@ -23,10 +23,10 @@ book_mappings = dict(zip(list(books['ISBN'].unique()), range(n_books)))
 # Add book indices to 'train' DataFrame for later lookup
 train['Book_Index'] = [book_mappings[x] for x in train['ISBN']]
 
-# create book feature matrix
-book_features = pd.DataFrame(index = list(books['ISBN'].unique()), columns = range(n_feats))
-# create user feature matrix
-user_features = pd.DataFrame(index = ['None']+list(users['User'].unique()), columns = range(n_feats))
+# create book feature matrix n_users by n_feats
+book_features = pd.DataFrame(np.random.randn(n_users, n_feats), index = list(books['ISBN'].unique()), columns = range(n_feats))
+# create user feature matrix n_feats by n_books
+user_features = pd.DataFrame(np.random.randn(n_feats, n_books), index = ['None']+list(users['User'].unique()), columns = range(n_books))
 
 """
 # Run this section of code to initialize the ratings matrix with training data
@@ -51,6 +51,23 @@ with open('ratings_matrix.dat', 'rb') as infile:
 
 """
 
+THRESHOLD = 0.0001
+
 # make list of tuples with book index, user index, and rating
-rating_datapoints = zip(train['Book_Index'],train['User'], train['Rating'])
+rating_datapoints = zip(train['ISBN'],train['User'], train['Rating'])
+converged = False
+while not converged:
+	for dp in rating_datapoint:
+		error = dp[2] - np.dot(user_features[dp[0],:],book_features[;,dp[1]) + beta/2 * (np.sum(np.square(user_features)) + np.sum(np.square(user_features)))
+		for feature in range(n_feats):
+			user_features[dp[0]][feature] += alpha * (2 * error * book_features[feature][dp[1]] - beta * user_features[dp[0]][feature])
+			book_features[feature][dp[1]] += alpha * (2 * error * user_features[dp[0]][feature] - beta * book_features[feature][dp[1]])
+	cumulative_error = 0
+	for dp in rating_datapoint:
+		cumulative_error += pow(dp[2] - np.dot(user_features[dp[0],:],book_features[;,dp[1]),2) + beta/2 * (np.sum(np.square(user_features[dp[0],:]])) + np.sum(np.square(book_features[:,dp[1],:]])))
+	if cumulative_error < THRESHOLD:
+		converged = True
+
+
+
 
