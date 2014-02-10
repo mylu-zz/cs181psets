@@ -56,7 +56,10 @@ THRESHOLD = 0.0001
 # make list of tuples with book index, user index, and rating
 rating_datapoints = zip(train['ISBN'],train['User'], train['Rating'])
 converged = False
+iteration = 0
 while not converged:
+	print iteration
+	iteration += 1
 	for dp in rating_datapoint:
 		error = dp[2] - np.dot(user_features[dp[0],:],book_features[;,dp[1]) + beta/2 * (np.sum(np.square(user_features)) + np.sum(np.square(user_features)))
 		for feature in range(n_feats):
