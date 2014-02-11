@@ -51,28 +51,41 @@ with open('ratings_matrix.dat', 'rb') as infile:
 
 """
 
-THRESHOLD = 0.0001
-alpha = 0.0001
-beta = 0.0002
+def matrix_factor(data, user_mat, book_mat, max_iter):
+  THRESHOLD = 0.0001
+  alpha = 0.0001
+  beta = 0.0002
 
-# make list of tuples with book index, user index, and rating
-rating_datapoints = zip(train['Book_Index'],train['User'],train['Rating'])
-converged = False
-iteration = 0
-while not converged:
-	print iteration
-	iteration += 1
-	for dp in rating_datapoint:
-		error = dp[2] - np.dot(user_features.irow(dp[1]),book_features.icol(dp[0])) + beta/2 * (np.sum(np.square(user_features.as_matrix())) + np.sum(np.square(book_features.as_matrix())))
-		for feature in range(n_feats):
-			user_features.iloc[dp[1],feature] += alpha * (2 * error * book_features.iloc[feature,dp[0]] - beta * user_features.iloc[dp[1],feature])
-			book_features.iloc[feature,dp[0]] += alpha * (2 * error * user_features.iloc[dp[1],feature] - beta * book_features.iloc[feature,dp[0]])
-	cumulative_error = 0
-	for dp in rating_datapoint:
-		cumulative_error += pow(dp[2] - np.dot(user_features.irow(dp[1]),book_features.icol(dp[0])),2) + beta/2 * (np.sum(np.square(user_features.irow(dp[1]))) + np.sum(np.square(book_features.icol(dp[0]))))
-	if cumulative_error < THRESHOLD:
-		converged = True
+  # make list of tuples with book index, user index, and rating
+  rating_datapoint = zip(train['Book_Index'],train['User'],train['Rating'])
+  converged = False
+  iteration = 0
+  while True:
+    print iteration
+    iteration += 1
+    for dp in rating_datapoint:
+      error = dp[2] - np.dot(user_features.irow(dp[1]),book_features.icol(dp[0])) + beta/2 * (np.sum(np.square(user_features.as_matrix())) + np.sum(np.square(book_features.as_matrix())))
+      for feature in range(n_feats):
+        user_features.iloc[dp[1],feature] += alpha * (error * book_features.iloc[feature,dp[0]] - beta * user_features.iloc[dp[1],feature])
+        book_features.iloc[feature,dp[0]] += alpha * (error * user_features.iloc[dp[1],feature] - beta * book_features.iloc[feature,dp[0]])
+    cumulative_error = 0
+    for dp in rating_datapoint:
+      cumulative_error += pow(dp[2] - np.dot(user_features.irow(dp[1]),book_features.icol(dp[0])),2) + beta/2 * (np.sum(np.square(user_features.irow(dp[1]))) + np.sum(np.square(book_features.icol(dp[0]))))
+    if cumulative_error < THRESHOLD or iteration >= max_iter:
+      break
+  
+  '''while True:
+  	print iteration
+  	iteration += 1
+  	errors = ratings - np.dot(user_features.as_matrix(), book_features.as_matrix()) + beta/2 * (np.sum(np.square(user_features.as_matrix())) + np.sum(np.square(book_features.as_matrix())))
+    for dp in rating_datapoint:
+      for feature in range(n_feats):
+        user_features.iloc[dp[1],feature] += alpha * (2 * error * book_features.iloc[feature,dp[0]] - beta * user_features.iloc[dp[1],feature])
+        book_features.iloc[feature,dp[0]] += alpha * (2 * error * user_features.iloc[dp[1],feature] - beta * book_features.iloc[feature,dp[0]])
+'''
 
-
+def modified_average(data, user, book):
+  mean = np.sum(ratings[]
+  
 
 

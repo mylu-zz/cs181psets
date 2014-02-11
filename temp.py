@@ -55,6 +55,9 @@ THRESHOLD = 1
 alpha = 0.0002
 beta = 0.0002
 
+user_biases = np.zeros(n_users)
+book_biases = np.zeros(n_books)
+
 # make list of tuples with book index, user index, and rating
 rating_datapoints = zip(train['Book_Index'],train['User'],train['Rating'])
 converged = False
@@ -63,17 +66,21 @@ step_size = 10
 
 last_user_features = np.matrix.copy(user_features)
 last_book_features = np.matrix.copy(book_features)
+last_user_biases = np.matrix.copy(user_biases)
+last_book_biases = np.matrix.copy(book_biases)
 last_cumulative_error = sys.maxint
 while True:
 	print iteration
 	iteration += 1
 	for dp in rating_datapoints:
-		error = dp[2] - np.dot(user_features[dp[1],:],book_features[:,dp[0]]) # + beta/2 * (np.sum(np.square(user_features)) + np.sum(np.square(book_features)))
+		error = dp[2] - global_mean  - user_biases[dp[1]] - book_biases[dp[0]] - np.dot(user_features[dp[1],:],book_features[:,dp[0]]) # + beta/2 * (np.sum(np.square(user_features)) + np.sum(np.square(book_features)))
 		for feature in range(n_feats):
 			user_features[dp[1]][feature] += alpha * (error * book_features[feature,dp[0]] - beta * user_features[dp[1],feature])
 			book_features[feature][dp[0]] += alpha * (error * user_features[dp[1],feature] - beta * book_features[feature,dp[0]])
+		user_biases[dp[1]]  += alpha * (error - beta * user_biases[dp[1]])
+		book_biases[dp[0]]  += alpha * (error - beta * book_biases[dp[0]])
 	if iteration % step_size == 0:
-		cumulative_error = sum([pow(dp[2] - np.dot(user_features[dp[1],:],book_features[:,dp[0]]),2) + beta/2 * (np.sum(np.square(user_features[dp[1],:])) + np.sum(np.square(book_features[:,dp[0]]))) for dp in rating_datapoints])
+		cumulative_error = sum([pow(dp[2] - global_mean - user_biases[dp[1]] - book_biases[dp[0]] - np.dot(user_features[dp[1],:],book_features[:,dp[0]]),2) + beta/2 * (np.sum(np.square(user_features[dp[1],:])) + np.sum(np.square(book_features[:,dp[0]]))) for dp in rating_datapoints])
 		print cumulative_error
 		if cumulative_error < THRESHOLD:
 			break
@@ -82,11 +89,15 @@ while True:
 			    alpha *= 1.25
 			last_user_features = np.matrix.copy(user_features)
 			last_book_features = np.matrix.copy(book_features)
+			last_user_biases = np.matrix.copy(user_biases)
+			last_book_biases = np.matrix.copy(book_biases)
 			last_cumulative_error = cumulative_error
 		else:
 			alpha *= 0.5
 			user_features = last_user_features
 			book_features = last_book_features
+			user_biases = last_user_biases
+			book_biases = last_book_biases
 			step_size = max(1,step_size/2)
 	
 
